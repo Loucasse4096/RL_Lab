@@ -32,6 +32,40 @@ Et une partie filmée, gen 40 (bleu) contre gen 0 (rouge) :
 
 ![duel](media/duel_gen0_vs_gen40.gif)
 
+## Aller plus loin — un agent plus intelligent
+
+L'agent évolué ci-dessus ne regarde qu'**un coup** à l'avance avec une valeur
+linéaire. On peut le rendre nettement plus fort de deux façons complémentaires :
+
+1. **Recherche en profondeur** (`search.py`) — un minimax avec élagage
+   alpha-bêta qui anticipe plusieurs tours. Comme le jeu a de l'information
+   cachée, on utilise le **PIMC** (*Perfect Information Monte Carlo*) : on
+   échantillonne plusieurs mains adverses plausibles, on résout un minimax
+   parfait-information dans chacune, et on moyenne.
+2. **Une valeur apprise par expert-iteration** (`train_value.py`, façon
+   AlphaZero en miniature) — l'agent de recherche joue des parties (l'« expert »),
+   on enregistre les états et qui gagne, puis on ajuste une fonction de valeur
+   **enrichie** (`smart_value.py`) pour prédire l'issue. Une meilleure évaluation
+   des feuilles rend la recherche plus forte à *toutes* les profondeurs.
+
+Taux de victoire de chaque niveau **contre l'agent évolué d'origine** :
+
+![intelligence](media/intelligence.png)
+
+On grimpe de 50 % (référence) à **~82 %** : anticiper plus loin (recherche)
+*et* mieux évaluer (valeur apprise) se cumulent. Au passage, l'expert-iteration
+fait progresser la valeur à chaque tour (itération 1 bat la valeur d'origine à
+74 %, itération 2 bat l'itération 1 à 60 %).
+
+Le plus malin (recherche profondeur 3 + valeur apprise) contre l'évolué :
+
+![duel malin](media/duel_smart_vs_evolved.gif)
+
+```bash
+python train_value.py        # apprend la valeur enrichie (expert-iteration)
+python intelligence.py       # graphe de comparaison + duel filme
+```
+
 ## Comment ça marche
 
 Le jeu a de l'**information cachée** (carte face cachée, main adverse) et un
@@ -51,8 +85,13 @@ espace d'actions plus riche que le Pong. L'approche reste simple :
 - **`train.py`** — entraînement par **évolution self-play** : on mute un vecteur
   de poids, on garde les meilleurs selon leur taux de victoire contre l'aléatoire
   + les anciens champions (coévolution).
+- **`search.py`** — l'agent fort : minimax + alpha-bêta + PIMC (voir plus haut).
+- **`smart_value.py` / `train_value.py`** — la valeur enrichie et son
+  apprentissage par expert-iteration.
 - **`match.py`** — déroulé d'une partie entre deux politiques.
-- **`render.py` / `progression.py` / `tournament.py`** — visualisations.
+- **`render.py` / `progression.py` / `tournament.py` / `intelligence.py`** —
+  visualisations.
+- **`play.py`** — **joue toi-même** contre un agent (voir ci-dessous).
 
 > Note : comme le lookahead voit déjà les coups gagnants/perdants, même des poids
 > quelconques jouent correctement contre l'aléatoire. Le vrai progrès se mesure
@@ -67,7 +106,22 @@ pip install -r ../../requirements.txt
 python train.py                  # entraine (~3 min), sauvegarde des checkpoints
 python progression.py            # courbe d'apprentissage + matrice des duels
 python tournament.py 0 40        # duel gen0 vs gen40 (score + GIF d'une partie)
+python train_value.py            # apprend la valeur enrichie (expert-iteration)
+python intelligence.py           # graphe "montee en intelligence" + duel filme
 ```
+
+## Joue toi-même contre un agent
+
+```bash
+python play.py                   # contre l'agent le plus malin (recherche + valeur apprise)
+python play.py --opponent gen40  # contre une version evoluee precise
+python play.py --opponent gen0   # contre la version naive (plus facile)
+python play.py --first           # tu commences
+```
+
+Au terminal : tu vois le plateau, ta main, et tu choisis tes coups (quelles
+cartes jouer, et quelle carte recruter quand l'agent joue). À la fin, ta partie
+est enregistrée en GIF dans `media/ma_partie.gif`.
 
 ## Règles (mode simple)
 
@@ -91,9 +145,11 @@ rattrapage, **3 Codebreakers** (victoire) ou **3 Daredevils** (défaite).
 
 ## Idées pour aller plus loin
 
-- Gérer les **défausses** (4/partie) dans la stratégie de l'agent.
+- ✅ ~~Recherche en profondeur~~ et ~~valeur apprise par expert-iteration~~ (faits).
+- ✅ ~~Jouer soi-même contre un agent~~ (`play.py`).
+- Gérer les **défausses** (4/partie) dans la stratégie des agents.
 - Implémenter le **mode avancé** (cartes marché noir) et la **variante équipe**.
-- Remplacer la fonction de valeur linéaire par un petit réseau, ou passer à du
-  **Q-learning / self-play avec recherche** plus profonde.
+- Remplacer la valeur linéaire par un petit **réseau de neurones** (toujours en
+  numpy) entraîné par expert-iteration.
 - Modéliser finement le **bluff** (quelle carte cacher) plutôt que l'approximation
-  « carte moyenne ».
+  PIMC « adversaire clairvoyant ».

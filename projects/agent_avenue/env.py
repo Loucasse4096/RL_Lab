@@ -50,6 +50,20 @@ class AgentAvenue:
         self.winner = None               # None / 0 / 1 une fois la partie finie
         return self
 
+    def clone(self):
+        """Copie profonde légère de l'état (pour la recherche en profondeur)."""
+        c = AgentAvenue.__new__(AgentAvenue)
+        c.rng = self.rng                 # inutilisé pendant la recherche
+        c.deck = list(self.deck)
+        c.hands = [list(self.hands[0]), list(self.hands[1])]
+        c.counts = [self.counts[0].copy(), self.counts[1].copy()]
+        c.pos_cum = list(self.pos_cum)
+        c.discards_left = list(self.discards_left)
+        c.active = self.active
+        c.turn = self.turn
+        c.winner = self.winner
+        return c
+
     # ---- lecture d'état ---------------------------------------------------
     def gap(self):
         """Distance horaire du pion 0 vers le pion 1 (sur la boucle déroulée)."""

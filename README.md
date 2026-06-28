@@ -12,7 +12,7 @@ chaque projet soit lisible de bout en bout et s'entraîne en quelques minutes.
 | Projet | Description | Aperçu |
 |--------|-------------|--------|
 | [🏓 Pong](projects/pong/) | Un Pong qui apprend à jouer contre lui-même (self-play, Q-learning). On le regarde progresser et on fait s'affronter ses versions. | ![pong](projects/pong/media/progression.gif) |
-| [🕵️ Agent Avenue](projects/agent_avenue/) | Le jeu de société *Agent Avenue* (mode simple) + un agent qui l'apprend en self-play (évolution). Courbe de progression et duels entre versions. | ![aa](projects/agent_avenue/media/ladder.png) |
+| [🕵️ Agent Avenue](projects/agent_avenue/) | Le jeu *Agent Avenue* (mode simple) + agents qui l'apprennent : self-play (évolution), recherche en profondeur (minimax + PIMC) et valeur apprise par expert-iteration. Tu peux **jouer toi-même** contre eux. | ![aa](projects/agent_avenue/media/intelligence.png) |
 
 ## Démarrer
 

@@ -3,3 +3,6 @@ __pycache__/
 .DS_Store
 .venv/
 venv/
+
+# parties jouees par l utilisateur
+projects/agent_avenue/media/ma_partie.gif
