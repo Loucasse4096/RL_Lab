@@ -144,22 +144,29 @@ class SearchPolicy:
         return self._order(env, me, best_up, best_down)
 
     def _order(self, env, me, a, b):
-        """Choisit laquelle des deux cartes mettre face visible (heuristique de
-        bluff) : on rend visible celle qu'on préfère voir l'adversaire prendre."""
+        """Choisit l'orientation (carte visible, carte cachée) — c'est ici que
+        vit le bluff.
+
+        On garde la carte que l'adversaire ne recrute pas. Le pire scénario est
+        de se retrouver COINCÉ avec une carte « poison » (ex. un 3e Daredevil =
+        défaite). Si on la met face VISIBLE, l'adversaire voit qu'il suffit de
+        prendre l'autre carte pour nous laisser le poison -> défaite assurée.
+        Donc on met face CACHÉE la carte qu'on redoute le plus de garder : au
+        moins l'adversaire doute, et peut la prendre lui-même et nous sauver.
+        """
         sign = 1.0 if me == 0 else -1.0
-        # valeur pour moi si JE recrute la carte x (l'adversaire prend l'autre)
-        def mine(x, other):
+        # valeur pour moi si je suis LAISSÉ avec la carte x (l'adversaire prend l'autre)
+        def keep(x, other):
             c = env.clone()
             c.apply_turn(x, other, recruit_up=False)   # adversaire prend 'other'
             c.check_end()
             return sign * self._leaf(c)
-        va = sign * 0 + mine(a, b)     # je garde a
-        vb = mine(b, a)                # je garde b
-        # je veux GARDER la meilleure -> la mettre face cachée (down) ;
-        # donc face visible = la moins bonne pour moi.
-        if va >= vb:
-            return (b, a)              # visible=b, je garde a (cachee)
-        return (a, b)
+        va = keep(a, b)                # je garde a
+        vb = keep(b, a)                # je garde b
+        # face cachée = la carte qu'on redoute le plus de garder (keep le + bas)
+        if va <= vb:
+            return (b, a)              # visible=b (gardable), cachée=a (redoutée)
+        return (a, b)                  # visible=a, cachée=b
 
     def choose_recruit(self, env, up):
         me = 1 - env.active
